@@ -4,43 +4,53 @@ Sys.setlocale("LC_CTYPE", "russian")
 install.packages("data.table")
 install.packages("xlsx")
 install.packages("lattice")
+install.packages("sqldf")
+
 library(xlsx)
 library(data.table)
 library(lattice)
+library(sqldf)
 
-#крио	Пайпель	Пайпель_max	ФИО	ХЭ_1	ХЭ_2	БЕРЕМЕННОСТЬ	Стадия	Лимфоидная инфильтрация	Склероз стромы	микрососуды со сладж-феноменом	Наличие плазмоцитов	PR HISTO Score желез %	PR HISTO Score  стромы %	ER HISTO Score желез %	ER HISTO Score  стромы %	пиноподии	PR/ER	LIF эпителий	LIF строма	ESR1	PGR	MSX-1/HOX-7	HOXA-10	HOXA-11	VEGF общ	IL1b	IL2	LIF	LIFR	IL8	IL15	IL18	TNFa	CD56	Cox-2	MMP11	HB-EGF	IGFBP1	IGF1	VEGF 189	CD68	IL6	IL10	TGFb	OsM	MMP-2	MMP-7	MMP9	AREG	IGF2	BCL2	BAX	CD45	PTEN	MMP8	IGFBP2	IGFBP4	IL12A
+
+datafile = "SRR292770_1.fastq"
+read.csv.sql(datafile,"select count(*) from file")
+
+
+#e?ei	Iaeiaeu	Iaeiaeu_max	OEI	OY_1	OY_2	AA?AIAIIINOU	Noaaey	Eeioieaiay eioeeuo?aoey	Neea?ic no?iiu	iee?ininoau ni neaa?-oaiiiaiii	Iaee?ea ieaciioeoia	PR HISTO Score ?aeac %	PR HISTO Score  no?iiu %	ER HISTO Score ?aeac %	ER HISTO Score  no?iiu %	ieiiiiaee	PR/ER	LIF yieoaeee	LIF no?iia	ESR1	PGR	MSX-1/HOX-7	HOXA-10	HOXA-11	VEGF iau	IL1b	IL2	LIF	LIFR	IL8	IL15	IL18	TNFa	CD56	Cox-2	MMP11	HB-EGF	IGFBP1	IGF1	VEGF 189	CD68	IL6	IL10	TGFb	OsM	MMP-2	MMP-7	MMP9	AREG	IGF2	BCL2	BAX	CD45	PTEN	MMP8	IGFBP2	IGFBP4	IL12A
 
 pregn <- read.xlsx2("Kulakovo/in_data.xlsx", "Data1", encoding="UTF-8", colClasses="character",  stringsAsFactors=FALSE)
 
 
-#Переводим на из текста в NA
+#Ia?aaiaei ia ec oaenoa a NA
 pregn[pregn == '#NULL!'] <-NA
 
-#Из текста в инт   может лучше бы в фактор?
-pregn[pregn == 'норма'] <- 1
-pregn[pregn == 'Норма'] <- 1
-pregn[pregn == 'ХЭ'] <- -1
-y <- pregn[["ХЭ_1"]]
+#Ec oaenoa a eio   ii?ao eo?oa au a oaeoi??
+pregn[pregn == 'ii?ia'] <- 1
+pregn[pregn == 'Ii?ia'] <- 1
+pregn[pregn == 'OY'] <- -1
+y <- pregn[["OY_1"]]
 y[ y == ''] <- 0
-pregn[["ХЭ_1"]] <- y
+pregn[["OY_1"]] <- y
 #
-#levels(pregn[["ХЭ_1"]] )
-# vмерджим Норм и норм
-#levels(pregn[["ХЭ_1"]] )[1] <- 1
-#levels(pregn[["ХЭ_1"]] )[2] <- 1
-#levels(pregn[["ХЭ_1"]] )[2] <- -1
+#levels(pregn[["OY_1"]] )
+# via?a?ei Ii?i e ii?i
+#levels(pregn[["OY_1"]] )[1] <- 1
+#levels(pregn[["OY_1"]] )[2] <- 1
+#levels(pregn[["OY_1"]] )[2] <- -1
 
 
-#Убираем строки где  беременность NA
+#Oae?aai no?iee aaa  aa?aiaiiinou NA
 pregn <- pregn[complete.cases(pregn[7]),]
 
 #pregn <- as.numeric(pregn)
 
 
-#Убираем пустую колонку ФИО  и IGF1  в ней только одно значение
-pregn <- subset(pregn, select = - c(ФИО,IGF1) )
+#Oae?aai ionoo? eieiieo OEI  e IGF1  a iae oieuei iaii cia?aiea
+pregn <- subset(pregn, select = - c(OEI,IGF1) )
 
-
+#Ioai? cia?aiee, aac i?iioneia - a iineaaieo 19 eieiieao i?aiu iiiai  NA
+pregn_cut <- pregn[1:(ncol(pregn)-19)]
+table(complete.cases(pregn_cut))
 
 #head(pregnT[1:20])
 
@@ -51,8 +61,8 @@ print(colnames(pregn)[i])
 
 
 
-#добавим фактор
-pregn[["БЕРЕМЕННОСТЬ"]] <- factor( pregn[["БЕРЕМЕННОСТЬ"]],labels = c("НБер", "Бер"))
+#aiaaaei oaeoi?
+pregn[["AA?AIAIIINOU"]] <- factor( pregn[["AA?AIAIIINOU"]],labels = c("IAa?", "Aa?"))
 
 
 for( i in  1:(ncol(pregn) - 1) )  {
@@ -73,8 +83,8 @@ dev.off()
 
 
 
-pregnT <- subset(pregn, pregn["БЕРЕМЕННОСТЬ"]==1 )
-pregnF <- subset(pregn, pregn["БЕРЕМЕННОСТЬ"]==0 )
+pregnT <- subset(pregn, pregn["AA?AIAIIINOU"]==1 )
+pregnF <- subset(pregn, pregn["AA?AIAIIINOU"]==0 )
 
 
 matrixT <- vector(mode="numeric", length=0)
@@ -176,7 +186,7 @@ fn = as.character(i)
 
 #colnames(pregnT)
 
-	#which(colnames(pregnT)=="Имя колонки") 
+	#which(colnames(pregnT)=="Eiy eieiiee") 
     #print(pregnT$i)
     #CurrCollTrue <- as.numeric(pregnT[[i]])
 	#CurrCollFalse<- as.numeric(pregnF[[i]])
